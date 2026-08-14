@@ -2,31 +2,146 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Math Battle Arena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ลิมิตความเร็ว</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>⚔ Math Battle Arena ⚔</h1>
-  <div id="game">
-    <div id="status">
-      เวลา: <span id="time">10</span>s | คะแนน: <span id="score">0</span>
+
+<div class="app">
+
+  <div class="brand">
+    <div>
+      <div class="brand-name">ลิมิตความเร็ว</div>
+      <div class="brand-tag">เกมคิดเร็ว · ลิมิตและอนุพันธ์ ม.6 · สุ่มตัวเลขใหม่ทุกข้อ</div>
     </div>
-    <div id="question">เริ่มเกมกดปุ่มด้านล่าง</div>
-    <div id="choices"></div>
-    <button id="startBtn" class="choice">▶ เริ่มเกม</button>
   </div>
 
-  <div id="leaderboard">
-    <h3>🏆 High Score (Local) 🏆</h3>
-    <ol id="scoresList"></ol>
-  </div>
+  <!-- ===================== START SCREEN ===================== -->
+  <section id="screen-start" class="panel">
+    <div class="graph-field hero">
+      <div class="hero-row">
+        <svg class="hero-svg" viewBox="0 0 300 100">
+          <defs>
+            <path id="curvePath" d="M 14,10 C 40,50 60,72 100,80 S 220,86 288,88" />
+          </defs>
+          <line class="asymptote" x1="14" y1="10" x2="14" y2="90"/>
+          <line class="asymptote" x1="0" y1="90" x2="300" y2="90"/>
+          <path class="curve-path" d="M 14,10 C 40,50 60,72 100,80 S 220,86 288,88"/>
+          <circle class="curve-target target-pulse" cx="288" cy="88" r="6"/>
+          <circle class="curve-dot curve-anim" r="5" style="offset-path:path('M 14,10 C 40,50 60,72 100,80 S 220,86 288,88');"/>
+        </svg>
+        <div class="hero-copy">
+          <h1>x เข้าใกล้ a เรื่อยๆ … แต่คุณมีแค่ 15 วินาที</h1>
+          <p>ฝึกไหวพริบเรื่องลิมิตและอนุพันธ์แบบจับเวลา เลือกระดับความยากได้เอง โจทย์ทุกข้อสุ่มตัวเลขสดใหม่ ไม่มีข้อซ้ำเดิม ตอบถูกเร็ว + ต่อสตรีคได้แต้มโบนัส</p>
+        </div>
+      </div>
+    </div>
 
-  <div id="stats" style="margin-top:20px; font-size:1.2rem; color:#00ffcc;">
-    กำลังโหลดสถิติ...
-  </div>
+    <div class="intro">
+      <div class="rules">
+        <div class="rule-card">
+          <div class="rule-num">15</div>
+          <div class="rule-desc">ข้อต่อรอบ สุ่มตัวเลขใหม่ทุกข้อ ไม่ซ้ำเดิม</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">15s</div>
+          <div class="rule-desc">เวลาคิดต่อข้อ หมดเวลา = ตอบผิดอัตโนมัติ</div>
+        </div>
+        <div class="rule-card">
+          <div class="rule-num">🔥×</div>
+          <div class="rule-desc">ตอบถูกติดกันยิ่งเยอะ ยิ่งได้โบนัสแต้มสตรีค</div>
+        </div>
+      </div>
 
-  <!-- script -->
-  <script src="game.js"></script>
-  <script type="module" src="firebase.js"></script>
+      <div class="diff-row">
+        <span class="diff-label">ระดับความยาก</span>
+        <div class="diff-options" id="diffOptions">
+          <button class="diff-btn" data-diff="1">ง่าย</button>
+          <button class="diff-btn active" data-diff="2">ปานกลาง</button>
+          <button class="diff-btn" data-diff="3">ยาก</button>
+        </div>
+      </div>
+
+      <div class="tag-cloud" id="tagCloud"></div>
+
+      <button class="btn-primary" id="btnStart">เริ่มเกม →</button>
+    </div>
+  </section>
+
+  <!-- ===================== GAME SCREEN ===================== -->
+  <section id="screen-game" class="panel hidden">
+    <div class="hud">
+      <div class="hud-cell">
+        <span class="hud-label">ข้อ</span>
+        <span class="hud-value cyan" id="hudProgress">1 / 15</span>
+      </div>
+      <div class="hud-cell">
+        <span class="hud-label">คะแนน</span>
+        <span class="hud-value" id="hudScore">0</span>
+      </div>
+      <div class="hud-cell">
+        <span class="hud-label">สตรีค</span>
+        <span class="hud-value amber" id="hudStreak">0</span>
+      </div>
+      <div class="hud-cell">
+        <span class="hud-label">เวลา</span>
+        <span class="hud-value" id="hudTimer">15.0</span>
+      </div>
+    </div>
+    <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+
+    <div class="stage graph-field">
+      <span class="cat-eyebrow" id="catEyebrow">หมวด</span>
+      <p class="question-text" id="questionText"></p>
+      <div class="choices" id="choicesBox"></div>
+      <div class="note-box" id="noteBox"></div>
+      <div class="next-row">
+        <button class="btn-next" id="btnNext">ข้อถัดไป →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== END SCREEN ===================== -->
+  <section id="screen-end" class="panel hidden">
+    <div class="end">
+      <h2>สรุปผลรอบนี้</h2>
+
+      <div class="grade-badge">
+        <div class="grade-letter" id="gradeLetter">A</div>
+        <div class="grade-desc">
+          <div class="grade-title" id="gradeTitle">โปรตัวจริง</div>
+          <div class="grade-sub" id="gradeSub">ตอบถูก 12 / 15 ข้อ</div>
+        </div>
+      </div>
+
+      <div class="end-stats">
+        <div class="end-stat">
+          <div class="hud-label">คะแนนรวม</div>
+          <div class="hud-value" id="endScore">0</div>
+        </div>
+        <div class="end-stat">
+          <div class="hud-label">ความแม่นยำ</div>
+          <div class="hud-value" id="endAccuracy">0%</div>
+        </div>
+        <div class="end-stat">
+          <div class="hud-label">สตรีคสูงสุด</div>
+          <div class="hud-value amber" id="endStreak">0</div>
+        </div>
+      </div>
+
+      <div class="review" id="reviewBox">
+        <h3>ข้อที่พลาด — ทบทวนอีกรอบ</h3>
+        <div id="reviewList"></div>
+      </div>
+
+      <button class="btn-primary" id="btnReplay">เล่นอีกรอบ →</button>
+    </div>
+  </section>
+
+  <div class="footer-note">คีย์ลัด: กด 1–4 เพื่อตอบ · Enter เพื่อไปข้อถัดไป</div>
+</div>
+
+<script src="game.js"></script>
 </body>
 </html>
